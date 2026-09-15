@@ -1,4 +1,4 @@
-const CACHE='takeback-v4-reaction';
+const CACHE='takeback-v4-2-rally';
 const ASSETS=['./','./index.html','./styles.css','./app.js','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>{
   self.skipWaiting();
