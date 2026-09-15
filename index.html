@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="早テイクバック" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>早テイクバック｜ジュニアテニス反応トレーニング</title>
+</head>
+<body>
+  <main id="app">
+    <section id="setupScreen" class="screen active">
+      <div class="brand">
+        <div class="ball-logo">●</div>
+        <div>
+          <h1>早テイクバック</h1>
+          <p>相手のインパクトを見て、先に準備する。</p>
+        </div>
+      </div>
+
+      <div class="card hero-card">
+        <div class="mini-court" aria-hidden="true">
+          <div class="net"></div>
+          <div class="player-demo"><span class="head"></span><span class="body"></span><span class="arm"></span><span class="racket"></span></div>
+          <div class="demo-ball"></div>
+        </div>
+        <div class="hero-copy">
+          <strong>見る → 判断 → テイクバック</strong>
+          <span>ボールがネットを越えてからではなく、相手の打点直後に準備。</span>
+        </div>
+      </div>
+
+      <div class="grid two">
+        <label class="field">
+          <span>トレーニング</span>
+          <select id="modeSelect">
+            <option value="fb">フォア / バック</option>
+            <option value="depth">フォア / バック + 前後</option>
+            <option value="random">ランダム連続</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>利き手</span>
+          <select id="handSelect">
+            <option value="right">右利き</option>
+            <option value="left">左利き</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>1セット</span>
+          <select id="durationSelect">
+            <option value="30">30秒</option>
+            <option value="45">45秒</option>
+            <option value="60" selected>60秒</option>
+            <option value="90">90秒</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>次の球まで</span>
+          <select id="paceSelect">
+            <option value="2200">ゆっくり 2.2秒</option>
+            <option value="1800" selected>標準 1.8秒</option>
+            <option value="1450">速い 1.45秒</option>
+            <option value="1150">試合級 1.15秒</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="toggle-row card">
+        <span><strong>コーチ判定</strong><small>各球で「OK / 遅れ」を記録</small></span>
+        <input id="coachToggle" type="checkbox" />
+      </label>
+
+      <button id="startBtn" class="primary big">トレーニング開始</button>
+      <button id="videoSettingsBtn" class="secondary">実写動画を登録する</button>
+
+      <div class="tip card">
+        <strong>おすすめの置き方</strong>
+        <p>iPhoneを目線の高さに置き、2〜3m離れてラケットを持つ。相手のインパクトを見た瞬間にスプリット → フォア/バックの準備。</p>
+      </div>
+    </section>
+
+    <section id="videoScreen" class="screen">
+      <div class="topbar">
+        <button id="backFromVideo" class="icon-btn">‹</button>
+        <h2>実写動画の登録</h2>
+        <span></span>
+      </div>
+      <div class="card info">
+        <p>短い動画（0.5〜2秒程度）を4種類登録できます。動画がない項目はアニメーションで代用します。</p>
+      </div>
+      <div id="videoSlots" class="video-slots"></div>
+      <button id="clearVideosBtn" class="danger-outline">登録動画をすべて削除</button>
+    </section>
+
+    <section id="countdownScreen" class="screen centered">
+      <div id="countdownValue" class="countdown">3</div>
+      <p>ラケットを構えて<br>相手の打点を見る</p>
+    </section>
+
+    <section id="trainingScreen" class="screen training-screen">
+      <div class="training-header">
+        <div><small>残り</small><strong id="timeLeft">60</strong></div>
+        <div class="progress-wrap"><div id="progressBar"></div></div>
+        <div><small>球数</small><strong id="repCount">0</strong></div>
+      </div>
+
+      <div id="stage" class="stage">
+        <video id="opponentVideo" playsinline muted preload="auto"></video>
+        <div id="animatedOpponent" class="opponent">
+          <div class="op-head"></div>
+          <div class="op-torso"></div>
+          <div class="op-leg left"></div>
+          <div class="op-leg right"></div>
+          <div class="op-arm"></div>
+          <div class="op-racket"></div>
+        </div>
+        <div class="baseline"></div>
+        <div class="service-line"></div>
+        <div class="center-line"></div>
+        <div class="net-line"></div>
+        <div id="shotBall" class="shot-ball"></div>
+        <div id="impactFlash" class="impact-flash">IMPACT</div>
+        <div id="answerBadge" class="answer-badge"></div>
+      </div>
+
+      <div id="coachPanel" class="coach-panel hidden">
+        <button id="lateBtn" class="judge late">遅れ</button>
+        <button id="goodBtn" class="judge good">OK</button>
+      </div>
+
+      <div class="training-footer">
+        <span id="trainingCue">相手の打点を見る</span>
+        <button id="stopBtn" class="stop-btn">終了</button>
+      </div>
+    </section>
+
+    <section id="resultScreen" class="screen">
+      <div class="result-hero">
+        <div class="result-icon">✓</div>
+        <h2>セット終了</h2>
+        <p>「当たってから準備」を「当たる瞬間に準備」へ。</p>
+      </div>
+      <div class="result-grid">
+        <div class="metric"><small>球数</small><strong id="resultReps">0</strong></div>
+        <div class="metric"><small>OK</small><strong id="resultGood">—</strong></div>
+        <div class="metric"><small>遅れ</small><strong id="resultLate">—</strong></div>
+        <div class="metric"><small>準備率</small><strong id="resultRate">—</strong></div>
+      </div>
+      <div class="card result-note" id="resultAdvice"></div>
+      <button id="againBtn" class="primary big">もう1セット</button>
+      <button id="homeBtn" class="secondary">設定に戻る</button>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
