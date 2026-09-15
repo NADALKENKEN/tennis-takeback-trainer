@@ -10,7 +10,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icon-192.png" />
   <link rel="stylesheet" href="styles.css" />
-  <title>早テイクバック GAME｜ジュニアテニス</title>
+  <title>早テイクバック Reaction v4</title>
 </head>
 <body>
 <main id="app">
@@ -18,22 +18,26 @@
     <div class="brand">
       <div class="ball-logo">●</div>
       <div>
-        <h1>早テイクバック GAME</h1>
-        <p>矢印が出た瞬間に、すぐ準備。</p>
+        <h1>早テイクバック Reaction</h1>
+        <p>相手の動き → インパクト → 自動で反応時間を計測。</p>
       </div>
     </div>
 
     <div class="card hero-card">
-      <div class="hero-arrows" aria-hidden="true">
-        <span>←</span><b>READY</b><span>→</span>
+      <div class="hero-stage" aria-hidden="true">
+        <div class="mini-opponent prep-fh">
+          <span class="head"></span><span class="torso"></span><span class="arm back"></span><span class="arm front"></span><span class="leg left"></span><span class="leg right"></span><span class="racket"></span>
+        </div>
+        <div class="hero-net"></div>
+        <div class="hero-ball"></div>
       </div>
       <div class="hero-copy">
-        <strong>「見る → 判断 → 準備」をゲーム化</strong>
-        <span>人型やコートは使わず、初動の速さだけに集中します。</span>
+        <strong>「相手が打つ瞬間」に準備開始</strong>
+        <span>見た目を戻しつつ、iPhoneカメラでテイクバック開始までの時間を自動計測します。</span>
       </div>
     </div>
 
-    <div class="section-title">ゲーム設定</div>
+    <div class="section-title">トレーニング設定</div>
     <div class="grid two">
       <label class="field">
         <span>モード</span>
@@ -53,7 +57,7 @@
       <label class="field">
         <span>時間</span>
         <select id="durationSelect">
-          <option value="30" selected>30秒チャレンジ</option>
+          <option value="30" selected>30秒</option>
           <option value="45">45秒</option>
           <option value="60">60秒</option>
           <option value="90">90秒</option>
@@ -72,25 +76,29 @@
     </div>
 
     <label class="toggle-row card">
-      <span><strong>保護者採点</strong><small>OK / 遅れでスコアをつける</small></span>
+      <span><strong>保護者採点</strong><small>OK / 遅れで記録する</small></span>
       <input id="coachToggle" type="checkbox" checked />
     </label>
     <label class="toggle-row card compact-toggle">
-      <span><strong>効果音</strong><small>矢印が出た瞬間に音を鳴らす</small></span>
+      <span><strong>自動計測</strong><small>前面カメラで動き始めを計測</small></span>
+      <input id="measureToggle" type="checkbox" checked />
+    </label>
+    <label class="toggle-row card compact-toggle">
+      <span><strong>効果音</strong><small>インパクトの瞬間に音</small></span>
       <input id="soundToggle" type="checkbox" checked />
     </label>
 
-    <button id="startBtn" class="primary big">ゲーム開始</button>
-
-    <div class="card rule-card">
-      <strong>やり方</strong>
-      <ol>
-        <li>iPhoneを目線の高さに置く</li>
-        <li>ラケットを持って中央を見て構える</li>
-        <li>矢印が出た瞬間にスプリット → テイクバック</li>
-        <li>保護者は準備が早ければ「OK」を押す</li>
-      </ol>
+    <div class="card info-card">
+      <strong>自動計測のコツ</strong>
+      <ul>
+        <li>iPhoneは胸〜顔の高さに固定</li>
+        <li>前面カメラに全身か上半身が入る位置に立つ</li>
+        <li>背景がなるべく動かない場所で行う</li>
+      </ul>
+      <div id="cameraStatus" class="camera-status">カメラ未起動</div>
     </div>
+
+    <button id="startBtn" class="primary big">トレーニング開始</button>
 
     <div class="section-title history-head"><span>最近の記録</span><button id="clearHistoryBtn" class="text-btn">消去</button></div>
     <div id="historyList" class="history-list"></div>
@@ -99,7 +107,7 @@
   <section id="countdownScreen" class="screen centered">
     <div class="countdown-wrap">
       <div id="countdownValue" class="countdown">3</div>
-      <p>ラケットを構えて<br>中央を見よう</p>
+      <p>ラケットを構えて<br>相手の打点を見る</p>
     </div>
   </section>
 
@@ -109,17 +117,48 @@
       <div class="hud-box score"><small>SCORE</small><strong id="scoreValue">0</strong></div>
       <div class="hud-box"><small>COMBO</small><strong id="comboValue">0</strong></div>
     </div>
+    <div class="sub-hud">
+      <div class="sub-box"><small>平均反応</small><strong id="avgRtValue">—</strong></div>
+      <div class="sub-box"><small>最速</small><strong id="bestRtValue">—</strong></div>
+      <div class="sub-box"><small>計測数</small><strong id="measureCountValue">0</strong></div>
+    </div>
     <div class="progress-wrap"><div id="progressBar"></div></div>
 
     <div id="stage" class="stage">
-      <div id="readyRing" class="ready-ring"><span>READY</span></div>
-      <div id="impactDot" class="impact-dot"></div>
-      <div id="arrowCue" class="arrow-cue">
-        <div id="arrowMain" class="arrow-main">→</div>
-        <div id="arrowSub" class="arrow-sub">フォア</div>
+      <div class="court court-back"></div>
+      <div class="court court-front"></div>
+      <div class="court-line net-line"></div>
+      <div class="court-line baseline-top"></div>
+      <div class="court-line baseline-bottom"></div>
+      <div class="court-line service-top"></div>
+      <div class="court-line service-bottom"></div>
+      <div class="court-line center-top"></div>
+      <div class="court-line center-bottom"></div>
+
+      <div id="opponent" class="opponent prep-fh">
+        <div class="shadow"></div>
+        <div class="head"></div>
+        <div class="torso"></div>
+        <div class="hip"></div>
+        <div class="leg leg-left"></div>
+        <div class="leg leg-right"></div>
+        <div class="arm arm-front"></div>
+        <div class="arm arm-back"></div>
+        <div class="racket"></div>
       </div>
+
+      <div id="shotBall" class="shot-ball"></div>
+      <div id="impactFlash" class="impact-flash">IMPACT</div>
+      <div id="answerBadge" class="answer-badge">フォア</div>
+      <div id="reactionChip" class="reaction-chip">312 ms</div>
       <div id="feedbackPop" class="feedback-pop">+100</div>
       <div id="streakBanner" class="streak-banner">3 COMBO!</div>
+
+      <div class="camera-preview-shell">
+        <video id="cameraVideo" class="camera-video" playsinline muted autoplay></video>
+        <div id="cameraBadge" class="camera-badge">AUTO OFF</div>
+      </div>
+      <canvas id="motionCanvas" width="64" height="48" hidden></canvas>
     </div>
 
     <div id="coachPanel" class="coach-panel hidden">
@@ -130,7 +169,7 @@
     <div class="training-footer">
       <div>
         <small id="levelLabel">Lv.3</small>
-        <span id="trainingCue">中央を見て待つ</span>
+        <span id="trainingCue">相手の打点を見る</span>
       </div>
       <button id="stopBtn" class="stop-btn">終了</button>
     </div>
@@ -139,7 +178,7 @@
   <section id="resultScreen" class="screen result-screen">
     <div class="result-hero">
       <div class="result-crown">★</div>
-      <h2 id="resultTitle">チャレンジ終了！</h2>
+      <h2 id="resultTitle">セット終了！</h2>
       <div class="final-score"><small>SCORE</small><strong id="resultScore">0</strong></div>
       <div id="resultRank" class="rank-badge">RANK B</div>
     </div>
@@ -149,6 +188,8 @@
       <div class="metric"><small>OK</small><strong id="resultGood">—</strong></div>
       <div class="metric"><small>遅れ</small><strong id="resultLate">—</strong></div>
       <div class="metric"><small>成功率</small><strong id="resultRate">—</strong></div>
+      <div class="metric"><small>平均反応</small><strong id="resultAvgRt">—</strong></div>
+      <div class="metric"><small>最速</small><strong id="resultBestRt">—</strong></div>
       <div class="metric wide"><small>ベストコンボ</small><strong id="resultCombo">0</strong></div>
     </div>
 
